@@ -21,3 +21,32 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+.idea/misc.xml
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/uiDesigner.xml
+.idea/vcs.xml
+.idea/workspace.xml
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/vcs.xml
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/vcs.xml
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/vcs.xml
+demo/mvnw.cmd
+/common-mapper/mvnw.cmd
+/common-mapper/.idea
+/common-mapper/.mvn
+/common-mapper/target
+/common-mapper/.gitignore
+/common-mapper/mvnw
+/demo/mvnw.cmd
+/demo/.mvn
+/demo/target
+/demo/.gitignore
+/demo/demo.iml
+/demo/mvnw
+/.idea
