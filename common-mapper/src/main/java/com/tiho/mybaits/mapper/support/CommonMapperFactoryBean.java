@@ -1,33 +1,38 @@
 package com.tiho.mybaits.mapper.support;
 
-import com.tiho.mybaits.mapper.definition.CommonMapper;
 import com.tiho.mybaits.mapper.config.CommonMapperProxy;
+import com.tiho.mybaits.mapper.definition.CommonMapper;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.lang.reflect.Proxy;
 
-public class CommonMapperFactoryBean implements FactoryBean<CommonMapper>, InitializingBean {
+public class CommonMapperFactoryBean<T> implements FactoryBean<T>, InitializingBean {
 
-    private SqlSessionFactory sessionFactory;
-    private CommonMapper commonMapper;
+    private SqlSessionFactory sqlSessionFactory;
+    private Class<T> clazz;
+    private T mapper;
 
-    public CommonMapperFactoryBean(SqlSessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    public CommonMapperFactoryBean(SqlSessionFactory sqlSessionFactory) {
+        this(sqlSessionFactory, (Class<T>) CommonMapper.class);
+    }
+
+    public CommonMapperFactoryBean(SqlSessionFactory sqlSessionFactory, Class<T> clazz) {
+        this.sqlSessionFactory = sqlSessionFactory;
+        this.clazz = clazz;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Class clazz = CommonMapper.class;
-        CommonMapperProxy commonMapperProxy = new CommonMapperProxy(sessionFactory, clazz);
         ClassLoader classLoader = clazz.getClassLoader();
-        commonMapper = (CommonMapper) Proxy.newProxyInstance(classLoader, new Class[]{clazz}, commonMapperProxy);
+        CommonMapperProxy commonMapperProxy = new CommonMapperProxy(sqlSessionFactory, clazz);
+        mapper = (T) Proxy.newProxyInstance(classLoader, new Class[]{clazz}, commonMapperProxy);
     }
 
     @Override
-    public CommonMapper getObject() throws Exception {
-        return commonMapper;
+    public T getObject() throws Exception {
+        return mapper;
     }
 
     @Override
