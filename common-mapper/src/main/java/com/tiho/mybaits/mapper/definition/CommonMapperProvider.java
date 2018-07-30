@@ -120,6 +120,15 @@ public class CommonMapperProvider {
         return sql;
     }
 
+    public String countWhere(Class<?> clazz, @Param(CommonMapper.PARAM) Object obj) {
+        CommonMapperContext commonMapperContext = CommonMapperContext.get();
+        EntityConfig entityConfig = commonMapperContext.getEntityConfig();
+        StringBuilder builder = new StringBuilder().append("select count(*) from ").append(entityConfig.getTableName());
+        foreachMap(builder, entityConfig, obj, " and ", false);
+        String sql = builder.toString();
+        return sql;
+    }
+
     private String updateSql(Class<?> clazz, Object obj, boolean allowNull) {
         CommonMapperContext commonMapperContext = CommonMapperContext.get();
         EntityConfig entityConfig = commonMapperContext.getEntityConfig();

@@ -104,4 +104,14 @@ public interface CommonMapper {
      */
     @SelectProvider(type = CommonMapperProvider.class, method = "count")
     long count(Class<?> clazz);
+
+    /**
+     * 根据不为空的属性获取记录数
+     *
+     * @param clazz
+     * @param obj
+     * @return
+     */
+    @SelectProvider(type = CommonMapperProvider.class, method = "countWhere")
+    long countWhere(Class<?> clazz, @Param(PARAM) Object obj);
 }
