@@ -80,6 +80,7 @@ public class DemoApplication {
             user.setUserMark("test");
             user.setProvince("test");
             user.setCity("test");
+            user.setMark("test");
             commonMapper.insert(AsiaUser.class, user);
         }
         {

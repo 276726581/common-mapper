@@ -10,10 +10,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
 import java.util.Map;
@@ -73,6 +70,11 @@ public class CommonMapperProxy implements InvocationHandler {
                 Column column = field.getAnnotation(Column.class);
                 Id id = field.getAnnotation(Id.class);
                 GeneratedValue generatedValue = field.getAnnotation(GeneratedValue.class);
+                Transient transientAnnotation = field.getAnnotation(Transient.class);
+                String modifier = Modifier.toString(field.getModifiers());
+                if (null != transientAnnotation || modifier.contains("transient")) {
+                    continue;
+                }
                 if (null != column && !StringUtils.isEmpty(column.name())) {
                     entityConfig.addColumnField(field, column.name());
                 } else {
