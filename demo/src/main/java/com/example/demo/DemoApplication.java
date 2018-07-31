@@ -28,6 +28,7 @@ public class DemoApplication {
         CommonMapper commonMapper = context.getBean(CommonMapper.class);
         System.out.println();
 
+        Long newId;
         {
             User user = new User();
             user.setUserName("test");
@@ -35,22 +36,26 @@ public class DemoApplication {
             user.setSex("男");
             user.setUserMark("test");
             commonMapper.insert(User.class, user);
+            newId = user.getId();
         }
+        Long updateId;
         {
             User user = new User();
-            user.setUserName("test");
-            user.setPassWord("test");
+            user.setId(422L);
+            user.setUserName("testtest");
+            user.setPassWord("testtest");
             user.setSex("男");
-            user.setUserMark("test");
+            user.setUserMark("test1");
             commonMapper.updateNotNullById(User.class, user);
+            updateId = user.getId();
         }
         {
-            commonMapper.deleteById(User.class, 1L);
+            commonMapper.deleteById(User.class, newId);
         }
         {
             User user = new User();
-            user.setUserName("testt");
-            user.setPassWord("testt");
+            user.setUserName("testtest");
+            user.setPassWord("testtest");
             commonMapper.delete(User.class, user);
         }
         {
@@ -118,7 +123,17 @@ public class DemoApplication {
             List<AsiaUser> results = commonMapper.select(AsiaUser.class, user);
             System.out.println();
         }
-
+        {
+            long count = commonMapper.count(User.class);
+            System.out.println();
+        }
+        {
+            AsiaUser user = new AsiaUser();
+            user.setUserName("test");
+            user.setPassWord("test");
+            long count = commonMapper.countWhere(AsiaUser.class, user);
+            System.out.println();
+        }
         System.out.println();
     }
 }

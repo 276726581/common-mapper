@@ -6,6 +6,7 @@ import java.util.Map;
 
 public class EntityConfig {
 
+    private String dataSourceName;
     private boolean cache;
     private Class<?> entity;
     private String tableName;
@@ -13,6 +14,14 @@ public class EntityConfig {
     private Map<String, Field> fieldMap = new HashMap<>();
     private Map<Field, String> columnMap = new HashMap<>();
     private Map<Field, String> sequenceMap = new HashMap<>();
+
+    public String getDataSourceName() {
+        return dataSourceName;
+    }
+
+    public void setDataSourceName(String dataSourceName) {
+        this.dataSourceName = dataSourceName;
+    }
 
     public boolean isCache() {
         return cache;

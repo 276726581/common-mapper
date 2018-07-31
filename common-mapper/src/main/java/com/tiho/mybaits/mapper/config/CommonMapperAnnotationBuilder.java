@@ -21,10 +21,7 @@ import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.*;
 
 public class CommonMapperAnnotationBuilder {
@@ -93,7 +90,7 @@ public class CommonMapperAnnotationBuilder {
     private String parseResultMap(Method method) {
         Class<?> returnType = getReturnType(method);
         String resultMapId = generateResultMapName(method);
-        applyResultMap(resultMapId, returnType);
+        applyResultMap(method, resultMapId, returnType);
         return resultMapId;
     }
 
@@ -110,9 +107,9 @@ public class CommonMapperAnnotationBuilder {
         return name;
     }
 
-    private void applyResultMap(String resultMapId, Class<?> returnType) {
+    private void applyResultMap(Method method, String resultMapId, Class<?> returnType) {
         List<ResultMapping> resultMappings = new ArrayList<ResultMapping>();
-        applyResults(returnType, resultMappings);
+        applyResults(method, returnType, resultMappings);
         assistant.addResultMap(resultMapId, returnType, null, null, resultMappings, null);
     }
 
@@ -134,7 +131,7 @@ public class CommonMapperAnnotationBuilder {
 
             KeyGenerator keyGenerator;
             String keyProperty = "id";
-            if (SqlCommandType.INSERT.equals(sqlCommandType) || SqlCommandType.UPDATE.equals(sqlCommandType)) {
+            if (SqlCommandType.INSERT.equals(sqlCommandType)) {
                 // first check for SelectKey annotation - that overrides everything else
                 if (null != entityConfig.getId()) {
                     keyGenerator = handleSelectKeyAnnotation(mappedStatementId, getParameterType(method), languageDriver);
@@ -172,7 +169,7 @@ public class CommonMapperAnnotationBuilder {
                     null,
                     parameterTypeClass,
                     resultMapId,
-                    entityConfig.getEntity(),
+                    getReturnType(method),
                     resultSetType,
                     flushCache,
                     useCache,
@@ -216,9 +213,13 @@ public class CommonMapperAnnotationBuilder {
 
     private Class<?> getReturnType(Method method) {
         Class<?> returnType = method.getReturnType();
+        Type genericReturnType = method.getGenericReturnType();
+        if (genericReturnType instanceof TypeVariable) {
+            return entityConfig.getEntity();
+        }
         Type resolvedReturnType = TypeParameterResolver.resolveReturnType(method, type);
         if (resolvedReturnType instanceof Class) {
-            returnType = entityConfig.getEntity();
+            returnType = (Class<?>) resolvedReturnType;
             if (returnType.isArray()) {
                 returnType = returnType.getComponentType();
             }
@@ -230,7 +231,13 @@ public class CommonMapperAnnotationBuilder {
                 if (actualTypeArguments != null && actualTypeArguments.length == 1) {
                     Type returnTypeParameter = actualTypeArguments[0];
                     if (returnTypeParameter instanceof Class<?>) {
-                        returnType = entityConfig.getEntity();
+                        ParameterizedType paramType = (ParameterizedType) genericReturnType;
+                        Type[] types = paramType.getActualTypeArguments();
+                        if (types != null && types.length == 1 && types[0] instanceof TypeVariable) {
+                            returnType = entityConfig.getEntity();
+                        } else {
+                            returnType = (Class<?>) returnTypeParameter;
+                        }
                     } else {
                         throw new UnsupportedOperationException();
                     }
@@ -315,31 +322,42 @@ public class CommonMapperAnnotationBuilder {
         return null;
     }
 
-    private void applyResults(Class<?> resultType, List<ResultMapping> resultMappings) {
-        Map<String, Field> fieldMap = entityConfig.getFieldMap();
-        for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
-            String key = entry.getKey();
-            Field value = entry.getValue();
-            List<ResultFlag> flags = new ArrayList<ResultFlag>();
-            if (key.equals(entityConfig.getId())) {
-                flags.add(ResultFlag.ID);
+    private void applyResults(Method method, Class<?> resultType, List<ResultMapping> resultMappings) {
+        Type type = method.getGenericReturnType();
+        if (type instanceof TypeVariable || type instanceof ParameterizedType) {
+            if (type instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) type;
+                Type[] types = parameterizedType.getActualTypeArguments();
+                if (null != type && types.length == 1
+                        && (types[0] instanceof TypeVariable
+                        || entityConfig.getEntity().isAssignableFrom((Class<?>) types[0]))) {
+                    Map<String, Field> fieldMap = entityConfig.getFieldMap();
+                    for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
+                        String key = entry.getKey();
+                        Field value = entry.getValue();
+                        List<ResultFlag> flags = new ArrayList<ResultFlag>();
+                        if (key.equals(entityConfig.getId())) {
+                            flags.add(ResultFlag.ID);
+                        }
+                        ResultMapping resultMapping = assistant.buildResultMapping(
+                                resultType,
+                                nullOrEmpty(value.getName()),
+                                nullOrEmpty(key),
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                null,
+                                flags,
+                                null,
+                                null,
+                                false);
+                        resultMappings.add(resultMapping);
+                    }
+                }
             }
-            ResultMapping resultMapping = assistant.buildResultMapping(
-                    resultType,
-                    nullOrEmpty(value.getName()),
-                    nullOrEmpty(key),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    flags,
-                    null,
-                    null,
-                    false);
-            resultMappings.add(resultMapping);
         }
     }
 

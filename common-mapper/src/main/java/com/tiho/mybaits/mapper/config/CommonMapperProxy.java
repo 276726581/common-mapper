@@ -1,12 +1,12 @@
 package com.tiho.mybaits.mapper.config;
 
+import com.tiho.mybaits.mapper.annotation.DataSource;
 import com.tiho.mybaits.mapper.util.CommonMapperContext;
 import com.tiho.mybaits.mapper.util.ReflectUtils;
 import org.apache.ibatis.lang.UsesJava7;
 import org.apache.ibatis.reflection.ExceptionUtil;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.util.StringUtils;
 
@@ -20,11 +20,11 @@ public class CommonMapperProxy implements InvocationHandler {
 
     private final Map<Class<?>, EntityConfig> entityConfigMap = new ConcurrentHashMap<>();
     private final Map<String, MapperMethod> methodCache = new ConcurrentHashMap<>();
-    private final SqlSessionFactory sqlSessionFactory;
+    private final SqlSession sqlSession;
     private Class mapperInterface;
 
-    public CommonMapperProxy(SqlSessionFactory sqlSessionFactory, Class mapperInterface) {
-        this.sqlSessionFactory = sqlSessionFactory;
+    public CommonMapperProxy(SqlSession sqlSession, Class mapperInterface) {
+        this.sqlSession = sqlSession;
         this.mapperInterface = mapperInterface;
     }
 
@@ -39,15 +39,19 @@ public class CommonMapperProxy implements InvocationHandler {
         } catch (Throwable t) {
             throw ExceptionUtil.unwrapThrowable(t);
         }
+        if (args.length < 1 || !(args[0] instanceof Class<?>)) {
+            throw new IllegalArgumentException();
+        }
         try {
             Class<?> entity = (Class<?>) args[0];
             EntityConfig entityConfig = cacheEntityConfig(entity);
             CommonMapperContext commonMapperContext = CommonMapperContext.get();
             commonMapperContext.setEntityConfig(entityConfig);
-            SqlSession sqlSession = sqlSessionFactory.openSession();
             MapperMethod mapperMethod = cachedMapperMethod(method, entity);
+            RouteDataSource.setKey(entityConfig.getDataSourceName());
             return mapperMethod.execute(sqlSession, args);
         } finally {
+            RouteDataSource.remove();
             CommonMapperContext.remove();
         }
     }
@@ -60,8 +64,10 @@ public class CommonMapperProxy implements InvocationHandler {
                 throw new NullPointerException("not found @Entity");
             }
 
-            entityConfig = new EntityConfig();
             Cacheable cacheable = ReflectUtils.getAnnotation(clazz, Cacheable.class);
+            DataSource dataSource = ReflectUtils.getAnnotation(clazz, DataSource.class);
+            entityConfig = new EntityConfig();
+            entityConfig.setDataSourceName(null != dataSource ? dataSource.value() : "");
             entityConfig.setCache(null != cacheable ? true : false);
             entityConfig.setEntity(clazz);
             entityConfig.setTableName(entity.name());
@@ -93,7 +99,7 @@ public class CommonMapperProxy implements InvocationHandler {
             }
             entityConfigMap.put(clazz, entityConfig);
 
-            Configuration configuration = sqlSessionFactory.getConfiguration();
+            Configuration configuration = sqlSession.getConfiguration();
             CommonMapperAnnotationBuilder commonMapperAnnotationBuilder = new CommonMapperAnnotationBuilder(configuration, mapperInterface, entityConfig);
             commonMapperAnnotationBuilder.parse();
         }
@@ -104,7 +110,7 @@ public class CommonMapperProxy implements InvocationHandler {
         String key = method.getDeclaringClass().getName() + "." + method.getName() + "-" + entity.getName();
         MapperMethod mapperMethod = methodCache.get(key);
         if (mapperMethod == null) {
-            Configuration configuration = sqlSessionFactory.getConfiguration();
+            Configuration configuration = sqlSession.getConfiguration();
             mapperMethod = new MapperMethod(mapperInterface, method, configuration, entity);
             methodCache.put(key, mapperMethod);
         }

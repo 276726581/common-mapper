@@ -1,5 +1,6 @@
 package com.example.demo.entity;
 
+import com.tiho.mybaits.mapper.annotation.DataSource;
 import org.springframework.cache.annotation.Cacheable;
 
 import javax.persistence.Column;
@@ -11,6 +12,7 @@ import javax.persistence.Id;
  * @Cacheable 是否缓存
  */
 @Cacheable
+@DataSource
 /**
  * 表名映射
  */
