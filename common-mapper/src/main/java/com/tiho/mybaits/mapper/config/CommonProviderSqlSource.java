@@ -5,6 +5,7 @@ import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.ParameterMapping;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.type.TypeHandler;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -34,15 +35,17 @@ public class CommonProviderSqlSource extends ProviderSqlSource {
             String property = parameterMapping.getProperty();
             String fieldName = property.replace("param.", "");
             Field field = fieldNameMap.get(fieldName);
-            TypeHandler<?> typeHandler = cacheTypeHandler(field, parameterMapping);
-            ParameterMapping mapping = new ParameterMapping.Builder(configuration, property, field.getType())
-                    .mode(parameterMapping.getMode())
-                    .numericScale(parameterMapping.getNumericScale())
-                    .resultMapId(parameterMapping.getResultMapId())
-                    .expression(parameterMapping.getExpression())
-                    .typeHandler(typeHandler)
-                    .build();
-            parameterMappingList.set(i, mapping);
+            if (null != field) {
+                TypeHandler<?> typeHandler = cacheTypeHandler(field, parameterMapping);
+                ParameterMapping mapping = new ParameterMapping.Builder(configuration, property, field.getType())
+                        .mode(parameterMapping.getMode())
+                        .numericScale(parameterMapping.getNumericScale())
+                        .resultMapId(parameterMapping.getResultMapId())
+                        .expression(parameterMapping.getExpression())
+                        .typeHandler(typeHandler)
+                        .build();
+                parameterMappingList.set(i, mapping);
+            }
         }
         return boundSql;
     }

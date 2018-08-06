@@ -9,7 +9,6 @@ import org.apache.ibatis.builder.BuilderException;
 import org.apache.ibatis.builder.IncompleteElementException;
 import org.apache.ibatis.builder.MapperBuilderAssistant;
 import org.apache.ibatis.builder.annotation.MethodResolver;
-import org.apache.ibatis.builder.annotation.ProviderSqlSource;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.keygen.KeyGenerator;
 import org.apache.ibatis.executor.keygen.NoKeyGenerator;
@@ -326,48 +325,52 @@ public class CommonMapperAnnotationBuilder {
 
     private void applyResults(Method method, Class<?> resultType, List<ResultMapping> resultMappings) {
         Type type = method.getGenericReturnType();
-        if (type instanceof TypeVariable || type instanceof ParameterizedType) {
-            if (type instanceof ParameterizedType) {
-                ParameterizedType parameterizedType = (ParameterizedType) type;
-                Type[] types = parameterizedType.getActualTypeArguments();
-                if (null != type && types.length == 1
-                        && (types[0] instanceof TypeVariable
-                        || entityConfig.getEntity().isAssignableFrom((Class<?>) types[0]))) {
-                    Map<String, Field> fieldMap = entityConfig.getFieldMap();
-                    for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
-                        String key = entry.getKey();
-                        Field field = entry.getValue();
-                        List<ResultFlag> flags = new ArrayList<ResultFlag>();
-                        if (key.equals(entityConfig.getId())) {
-                            flags.add(ResultFlag.ID);
-                        }
-
-                        Class<?> javaType = null;
-                        Class<? extends TypeHandler<?>> typeHandler = null;
-                        FieldTypeDiscriminator typeDiscriminator = field.getAnnotation(FieldTypeDiscriminator.class);
-                        if (null != typeDiscriminator) {
-                            javaType = typeDiscriminator.javaType();
-                            typeHandler = typeDiscriminator.typeHandler();
-                        }
-                        ResultMapping resultMapping = assistant.buildResultMapping(
-                                resultType,
-                                nullOrEmpty(field.getName()),
-                                nullOrEmpty(key),
-                                void.class == javaType ? null : javaType,
-                                null,
-                                null,
-                                null,
-                                null,
-                                null,
-                                typeHandler,
-                                flags,
-                                null,
-                                null,
-                                false);
-                        resultMappings.add(resultMapping);
-                    }
-                }
+        if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            Type[] types = parameterizedType.getActualTypeArguments();
+            if (null != type && types.length == 1
+                    && (types[0] instanceof TypeVariable
+                    || entityConfig.getEntity().isAssignableFrom((Class<?>) types[0]))) {
+                addResultMapping(resultType, resultMappings);
             }
+        } else if (type instanceof TypeVariable) {
+            addResultMapping(resultType, resultMappings);
+        }
+    }
+
+    private void addResultMapping(Class<?> resultType, List<ResultMapping> resultMappings) {
+        Map<String, Field> fieldMap = entityConfig.getFieldMap();
+        for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
+            String key = entry.getKey();
+            Field field = entry.getValue();
+            List<ResultFlag> flags = new ArrayList<ResultFlag>();
+            if (key.equals(entityConfig.getId())) {
+                flags.add(ResultFlag.ID);
+            }
+
+            Class<?> javaType = null;
+            Class<? extends TypeHandler<?>> typeHandler = null;
+            FieldTypeDiscriminator typeDiscriminator = field.getAnnotation(FieldTypeDiscriminator.class);
+            if (null != typeDiscriminator) {
+                javaType = typeDiscriminator.javaType();
+                typeHandler = typeDiscriminator.typeHandler();
+            }
+            ResultMapping resultMapping = assistant.buildResultMapping(
+                    resultType,
+                    nullOrEmpty(field.getName()),
+                    nullOrEmpty(key),
+                    void.class == javaType ? null : javaType,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    typeHandler,
+                    flags,
+                    null,
+                    null,
+                    false);
+            resultMappings.add(resultMapping);
         }
     }
 
