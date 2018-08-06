@@ -3,14 +3,14 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>tiho-mybatis</groupId>
-    <artifactId>common-mapper</artifactId>
-    <version>1.0</version>
+    <groupId>io.github.open-creation</groupId>
+    <artifactId>mybatis-common-mapper</artifactId>
+    <version>1.1</version>
     <packaging>jar</packaging>
 
-    <name>common-mapper</name>
+    <name>mybatis-common-mapper</name>
     <description>mybatis common-mapper</description>
-    <url>https://github.com/276726581/common-mapper</url>
+    <url>https://github.com/open-creation/common-mapper</url>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -50,9 +50,9 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:https://github.com/276726581/common-mapper.git</connection>
-        <developerConnection>scm:git:https://github.com/276726581/common-mapper.git</developerConnection>
-        <url>https://github.com/276726581/common-mapper</url>
+        <connection>scm:git:https://github.com/open-creation/common-mapper.git</connection>
+        <developerConnection>scm:git:https://github.com/open-creation/common-mapper.git</developerConnection>
+        <url>https://github.com/open-creation/common-mapper</url>
     </scm>
     <developers>
         <developer>
@@ -88,7 +88,7 @@
                         <configuration>
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <autoReleaseAfterClose>false</autoReleaseAfterClose>
                         </configuration>
                     </plugin>
                     <plugin>

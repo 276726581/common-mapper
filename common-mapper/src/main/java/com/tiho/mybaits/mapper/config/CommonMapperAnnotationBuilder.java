@@ -1,5 +1,6 @@
 package com.tiho.mybaits.mapper.config;
 
+import com.tiho.mybaits.mapper.annotation.FieldTypeDiscriminator;
 import com.tiho.mybaits.mapper.definition.CommonMapper;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.binding.BindingException;
@@ -19,6 +20,7 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
+import org.apache.ibatis.type.TypeHandler;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -108,7 +110,7 @@ public class CommonMapperAnnotationBuilder {
     }
 
     private void applyResultMap(Method method, String resultMapId, Class<?> returnType) {
-        List<ResultMapping> resultMappings = new ArrayList<ResultMapping>();
+        List<ResultMapping> resultMappings = new ArrayList<>();
         applyResults(method, returnType, resultMappings);
         assistant.addResultMap(resultMapId, returnType, null, null, resultMappings, null);
     }
@@ -263,7 +265,7 @@ public class CommonMapperAnnotationBuilder {
                 return buildSqlSourceFromStrings(strings, parameterType, languageDriver);
             } else if (sqlProviderAnnotationType != null) {
                 Annotation sqlProviderAnnotation = method.getAnnotation(sqlProviderAnnotationType);
-                return new ProviderSqlSource(assistant.getConfiguration(), sqlProviderAnnotation, type, method);
+                return new CommonProviderSqlSource(assistant.getConfiguration(), sqlProviderAnnotation, type, method, entityConfig);
             }
             return null;
         } catch (Exception e) {
@@ -334,22 +336,30 @@ public class CommonMapperAnnotationBuilder {
                     Map<String, Field> fieldMap = entityConfig.getFieldMap();
                     for (Map.Entry<String, Field> entry : fieldMap.entrySet()) {
                         String key = entry.getKey();
-                        Field value = entry.getValue();
+                        Field field = entry.getValue();
                         List<ResultFlag> flags = new ArrayList<ResultFlag>();
                         if (key.equals(entityConfig.getId())) {
                             flags.add(ResultFlag.ID);
                         }
+
+                        Class<?> javaType = null;
+                        Class<? extends TypeHandler<?>> typeHandler = null;
+                        FieldTypeDiscriminator typeDiscriminator = field.getAnnotation(FieldTypeDiscriminator.class);
+                        if (null != typeDiscriminator) {
+                            javaType = typeDiscriminator.javaType();
+                            typeHandler = typeDiscriminator.typeHandler();
+                        }
                         ResultMapping resultMapping = assistant.buildResultMapping(
                                 resultType,
-                                nullOrEmpty(value.getName()),
+                                nullOrEmpty(field.getName()),
                                 nullOrEmpty(key),
+                                void.class == javaType ? null : javaType,
                                 null,
                                 null,
                                 null,
                                 null,
                                 null,
-                                null,
-                                null,
+                                typeHandler,
                                 flags,
                                 null,
                                 null,

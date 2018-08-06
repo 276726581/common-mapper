@@ -16,7 +16,7 @@ public class CommonMapperProvider {
         EntityConfig entityConfig = commonMapperContext.getEntityConfig();
         String sql = new CommonSQL() {
             {
-                INSERT_INTO(entityConfig.getTableName());
+                INSERT_INTO(entityConfig.getSubTableName());
                 for (Map.Entry<String, Field> entry : entityConfig.getFieldMap().entrySet()) {
                     String key = entry.getKey();
                     Field field = entry.getValue();
@@ -43,7 +43,7 @@ public class CommonMapperProvider {
 
         String sql = new CommonSQL() {
             {
-                DELETE_FROM(entityConfig.getTableName());
+                DELETE_FROM(entityConfig.getSubTableName());
                 WHERE(entityConfig.getId(), VAR(CommonMapper.PARAM));
             }
         }.toString();
@@ -56,7 +56,7 @@ public class CommonMapperProvider {
 
         String sql = new CommonSQL() {
             {
-                DELETE_FROM(entityConfig.getTableName());
+                DELETE_FROM(entityConfig.getSubTableName());
                 for (Map.Entry<String, Field> entry : entityConfig.getFieldMap().entrySet()) {
                     String key = entry.getKey();
                     Field field = entry.getValue();
@@ -77,7 +77,7 @@ public class CommonMapperProvider {
         String sql = new CommonSQL() {
             {
                 SELECT("*");
-                FROM(entityConfig.getTableName());
+                FROM(entityConfig.getSubTableName());
                 WHERE(entityConfig.getId(), VAR(CommonMapper.PARAM));
             }
         }.toString();
@@ -126,6 +126,29 @@ public class CommonMapperProvider {
         return sql;
     }
 
+    public String selectListByPageAsc(Class<?> clazz, @Param(CommonMapper.PARAM) long lastId, int count) {
+        String sql = selectListByPage(clazz, lastId, count, "asc");
+        return sql;
+    }
+
+    public String selectListByPageDesc(Class<?> clazz, @Param(CommonMapper.PARAM) long lastId, int count) {
+        String sql = selectListByPage(clazz, lastId, count, "desc");
+        return sql;
+    }
+
+    public String selectListByPage(Class<?> clazz, long lastId, int count, String order) {
+        CommonMapperContext commonMapperContext = CommonMapperContext.get();
+        EntityConfig entityConfig = commonMapperContext.getEntityConfig();
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("select * from ").append(entityConfig.getTableName());
+        builder.append(" where ").append(entityConfig.getId()).append(">").append(CommonSQL.VAR(CommonMapper.PARAM));
+        builder.append(" order by ").append(entityConfig.getId()).append(" ").append(order);
+        builder.append(" limit ").append(count);
+        String pageSql = builder.toString();
+        return pageSql;
+    }
+
     public String count(Class<?> clazz) {
         CommonMapperContext commonMapperContext = CommonMapperContext.get();
         EntityConfig entityConfig = commonMapperContext.getEntityConfig();
@@ -166,7 +189,7 @@ public class CommonMapperProvider {
 
         String sql = new CommonSQL() {
             {
-                UPDATE(entityConfig.getTableName());
+                UPDATE(entityConfig.getSubTableName());
                 for (Map.Entry<String, Field> entry : entityConfig.getFieldMap().entrySet()) {
                     String key = entry.getKey();
                     Field field = entry.getValue();

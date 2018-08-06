@@ -1,12 +1,17 @@
 package com.tiho.mybaits.mapper.config;
 
 import com.tiho.mybaits.mapper.annotation.DataSource;
+import com.tiho.mybaits.mapper.annotation.FieldTypeDiscriminator;
+import com.tiho.mybaits.mapper.annotation.SubTable;
+import com.tiho.mybaits.mapper.support.subtable.SubTableProcessor;
 import com.tiho.mybaits.mapper.util.CommonMapperContext;
 import com.tiho.mybaits.mapper.util.ReflectUtils;
 import org.apache.ibatis.lang.UsesJava7;
 import org.apache.ibatis.reflection.ExceptionUtil;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.util.StringUtils;
 
@@ -17,6 +22,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class CommonMapperProxy implements InvocationHandler {
+
+    private Logger logger = LoggerFactory.getLogger(CommonMapperProxy.class);
 
     private final Map<Class<?>, EntityConfig> entityConfigMap = new ConcurrentHashMap<>();
     private final Map<String, MapperMethod> methodCache = new ConcurrentHashMap<>();
@@ -71,9 +78,20 @@ public class CommonMapperProxy implements InvocationHandler {
             entityConfig.setCache(null != cacheable ? true : false);
             entityConfig.setEntity(clazz);
             entityConfig.setTableName(entity.name());
+            try {
+                SubTable subTable = clazz.getAnnotation(SubTable.class);
+                if (null != subTable) {
+                    entityConfig.setSubAttribute(subTable.attribute());
+                    SubTableProcessor subTableProcessor = subTable.value().newInstance();
+                    entityConfig.setSubTableProcessor(subTableProcessor);
+                }
+            } catch (Exception e) {
+                throw new IllegalArgumentException(e.getMessage(), e);
+            }
             Field[] fields = ReflectUtils.getAllDeclaredFields(clazz);
             for (Field field : fields) {
                 Column column = field.getAnnotation(Column.class);
+                FieldTypeDiscriminator fieldTypeDiscriminator = field.getAnnotation(FieldTypeDiscriminator.class);
                 Id id = field.getAnnotation(Id.class);
                 GeneratedValue generatedValue = field.getAnnotation(GeneratedValue.class);
                 Transient transientAnnotation = field.getAnnotation(Transient.class);
@@ -95,6 +113,9 @@ public class CommonMapperProxy implements InvocationHandler {
                 }
                 if (null != generatedValue) {
                     entityConfig.addSequenceField(field, generatedValue.generator());
+                }
+                if (null != fieldTypeDiscriminator) {
+                    entityConfig.addFieldTypeHandler(field, fieldTypeDiscriminator.typeHandler());
                 }
             }
             entityConfigMap.put(clazz, entityConfig);

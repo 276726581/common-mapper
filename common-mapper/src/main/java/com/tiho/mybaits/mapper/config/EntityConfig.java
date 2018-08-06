@@ -1,5 +1,8 @@
 package com.tiho.mybaits.mapper.config;
 
+import com.tiho.mybaits.mapper.support.subtable.SubTableProcessor;
+import org.apache.ibatis.type.TypeHandler;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,8 +15,12 @@ public class EntityConfig {
     private String tableName;
     private String id;
     private Map<String, Field> fieldMap = new HashMap<>();
+    private Map<String, Field> fieldNameMap = new HashMap<>();
     private Map<Field, String> columnMap = new HashMap<>();
     private Map<Field, String> sequenceMap = new HashMap<>();
+    private Map<Field, Class<? extends TypeHandler<?>>> fieldTypeHandlerMap = new HashMap<>();
+    private String subAttribute;
+    private SubTableProcessor subTableProcessor;
 
     public String getDataSourceName() {
         return dataSourceName;
@@ -63,6 +70,14 @@ public class EntityConfig {
         this.fieldMap = fieldMap;
     }
 
+    public Map<String, Field> getFieldNameMap() {
+        return fieldNameMap;
+    }
+
+    public void setFieldNameMap(Map<String, Field> fieldNameMap) {
+        this.fieldNameMap = fieldNameMap;
+    }
+
     public Map<Field, String> getColumnMap() {
         return columnMap;
     }
@@ -79,14 +94,50 @@ public class EntityConfig {
         this.sequenceMap = sequenceMap;
     }
 
+    public Map<Field, Class<? extends TypeHandler<?>>> getFieldTypeHandlerMap() {
+        return fieldTypeHandlerMap;
+    }
+
+    public void setFieldTypeHandlerMap(Map<Field, Class<? extends TypeHandler<?>>> fieldTypeHandlerMap) {
+        this.fieldTypeHandlerMap = fieldTypeHandlerMap;
+    }
+
+    public SubTableProcessor getSubTableProcessor() {
+        return subTableProcessor;
+    }
+
+    public void setSubTableProcessor(SubTableProcessor subTableProcessor) {
+        this.subTableProcessor = subTableProcessor;
+    }
+
+    public String getSubAttribute() {
+        return subAttribute;
+    }
+
+    public void setSubAttribute(String subAttribute) {
+        this.subAttribute = subAttribute;
+    }
 
     public void addColumnField(Field field, String column) {
         fieldMap.put(column, field);
+        fieldNameMap.put(field.getName(), field);
         columnMap.put(field, column);
     }
 
     public void addSequenceField(Field field, String generatedValue) {
         sequenceMap.put(field, generatedValue);
+    }
+
+    public void addFieldTypeHandler(Field field, Class<? extends TypeHandler<?>> clazz) {
+        fieldTypeHandlerMap.put(field, clazz);
+    }
+
+    public String getSubTableName() {
+        if (null == subTableProcessor) {
+            return tableName;
+        }
+        String subTableName = subTableProcessor.getTableName(this.tableName, subAttribute);
+        return subTableName;
     }
 
     public Field getPrimaryKeyField() {

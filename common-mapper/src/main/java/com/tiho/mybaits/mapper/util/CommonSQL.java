@@ -24,7 +24,7 @@ public class CommonSQL extends SQL {
         return str;
     }
 
-    public String VAR(String value) {
+    public static String VAR(String value) {
         StringBuilder builder = new StringBuilder();
         builder.append("#{")
                 .append(value)
@@ -33,7 +33,7 @@ public class CommonSQL extends SQL {
         return str;
     }
 
-    public String PARAM(String value) {
+    public static String PARAM(String value) {
         StringBuilder builder = new StringBuilder();
         builder.append(CommonMapper.PARAM)
                 .append(".")

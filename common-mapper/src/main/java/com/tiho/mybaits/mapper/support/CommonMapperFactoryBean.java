@@ -14,12 +14,11 @@ public class CommonMapperFactoryBean<T> implements FactoryBean<T>, InitializingB
     private SqlSessionFactory sqlSessionFactory;
     private Class<T> clazz;
 
-    public CommonMapperFactoryBean(SqlSessionFactory sqlSessionFactory) {
-        this(sqlSessionFactory, (Class<T>) CommonMapper.class);
+    public void setSqlSessionFactory(SqlSessionFactory sqlSessionFactory) {
+        this.sqlSessionFactory = sqlSessionFactory;
     }
 
-    public CommonMapperFactoryBean(SqlSessionFactory sqlSessionFactory, Class<T> clazz) {
-        this.sqlSessionFactory = sqlSessionFactory;
+    public CommonMapperFactoryBean(Class<T> clazz) {
         this.clazz = clazz;
     }
 
