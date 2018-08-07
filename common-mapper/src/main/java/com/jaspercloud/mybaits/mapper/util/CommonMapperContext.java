@@ -1,6 +1,6 @@
-package com.tiho.mybaits.mapper.util;
+package com.jaspercloud.mybaits.mapper.util;
 
-import com.tiho.mybaits.mapper.config.EntityConfig;
+import com.jaspercloud.mybaits.mapper.config.EntityConfig;
 
 public final class CommonMapperContext {
 

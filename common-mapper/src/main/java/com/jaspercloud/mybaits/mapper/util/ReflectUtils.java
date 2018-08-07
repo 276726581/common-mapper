@@ -1,4 +1,4 @@
-package com.tiho.mybaits.mapper.util;
+package com.jaspercloud.mybaits.mapper.util;
 
 import org.springframework.util.ReflectionUtils;
 

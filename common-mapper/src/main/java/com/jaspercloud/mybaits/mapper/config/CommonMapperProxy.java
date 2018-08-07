@@ -1,11 +1,11 @@
-package com.tiho.mybaits.mapper.config;
+package com.jaspercloud.mybaits.mapper.config;
 
-import com.tiho.mybaits.mapper.annotation.DataSource;
-import com.tiho.mybaits.mapper.annotation.FieldTypeDiscriminator;
-import com.tiho.mybaits.mapper.annotation.SubTable;
-import com.tiho.mybaits.mapper.support.subtable.SubTableProcessor;
-import com.tiho.mybaits.mapper.util.CommonMapperContext;
-import com.tiho.mybaits.mapper.util.ReflectUtils;
+import com.jaspercloud.mybaits.mapper.annotation.DataSource;
+import com.jaspercloud.mybaits.mapper.annotation.FieldTypeDiscriminator;
+import com.jaspercloud.mybaits.mapper.annotation.SubTable;
+import com.jaspercloud.mybaits.mapper.support.subtable.SubTableProcessor;
+import com.jaspercloud.mybaits.mapper.util.CommonMapperContext;
+import com.jaspercloud.mybaits.mapper.util.ReflectUtils;
 import org.apache.ibatis.lang.UsesJava7;
 import org.apache.ibatis.reflection.ExceptionUtil;
 import org.apache.ibatis.session.Configuration;

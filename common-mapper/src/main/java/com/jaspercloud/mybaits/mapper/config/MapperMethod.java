@@ -1,4 +1,4 @@
-package com.tiho.mybaits.mapper.config;
+package com.jaspercloud.mybaits.mapper.config;
 
 import org.apache.ibatis.annotations.Flush;
 import org.apache.ibatis.annotations.MapKey;

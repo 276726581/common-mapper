@@ -1,4 +1,4 @@
-package com.tiho.mybaits.mapper.support.subtable;
+package com.jaspercloud.mybaits.mapper.support.subtable;
 
 public class IdSubTableProcessor implements SubTableProcessor {
 

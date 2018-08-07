@@ -1,6 +1,6 @@
-package com.tiho.mybaits.mapper.util;
+package com.jaspercloud.mybaits.mapper.util;
 
-import com.tiho.mybaits.mapper.definition.CommonMapper;
+import com.jaspercloud.mybaits.mapper.definition.CommonMapper;
 import org.apache.ibatis.jdbc.SQL;
 
 public class CommonSQL extends SQL {

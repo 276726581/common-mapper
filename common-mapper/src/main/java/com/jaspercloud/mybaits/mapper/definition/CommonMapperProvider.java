@@ -1,9 +1,9 @@
-package com.tiho.mybaits.mapper.definition;
+package com.jaspercloud.mybaits.mapper.definition;
 
-import com.tiho.mybaits.mapper.config.EntityConfig;
-import com.tiho.mybaits.mapper.util.CommonMapperContext;
-import com.tiho.mybaits.mapper.util.CommonSQL;
-import com.tiho.mybaits.mapper.util.ReflectUtils;
+import com.jaspercloud.mybaits.mapper.config.EntityConfig;
+import com.jaspercloud.mybaits.mapper.util.CommonMapperContext;
+import com.jaspercloud.mybaits.mapper.util.CommonSQL;
+import com.jaspercloud.mybaits.mapper.util.ReflectUtils;
 import org.apache.ibatis.annotations.Param;
 
 import java.lang.reflect.Field;

@@ -1,7 +1,7 @@
-package com.tiho.mybaits.mapper.support;
+package com.jaspercloud.mybaits.mapper.support;
 
-import com.tiho.mybaits.mapper.config.CommonMapperProxy;
-import com.tiho.mybaits.mapper.definition.CommonMapper;
+import com.jaspercloud.mybaits.mapper.config.CommonMapperProxy;
+import com.jaspercloud.mybaits.mapper.definition.CommonMapper;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;

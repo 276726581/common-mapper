@@ -1,8 +1,8 @@
-package com.tiho.mybaits.mapper.annotation;
+package com.jaspercloud.mybaits.mapper.annotation;
 
 
-import com.tiho.mybaits.mapper.support.subtable.IdSubTableProcessor;
-import com.tiho.mybaits.mapper.support.subtable.SubTableProcessor;
+import com.jaspercloud.mybaits.mapper.support.subtable.IdSubTableProcessor;
+import com.jaspercloud.mybaits.mapper.support.subtable.SubTableProcessor;
 import org.springframework.stereotype.Component;
 
 import java.lang.annotation.*;

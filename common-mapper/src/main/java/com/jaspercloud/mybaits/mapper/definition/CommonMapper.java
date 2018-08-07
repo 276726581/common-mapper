@@ -1,4 +1,4 @@
-package com.tiho.mybaits.mapper.definition;
+package com.jaspercloud.mybaits.mapper.definition;
 
 import org.apache.ibatis.annotations.*;
 

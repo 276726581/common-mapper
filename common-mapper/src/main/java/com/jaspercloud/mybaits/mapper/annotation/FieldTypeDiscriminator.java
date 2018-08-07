@@ -1,4 +1,4 @@
-package com.tiho.mybaits.mapper.annotation;
+package com.jaspercloud.mybaits.mapper.annotation;
 
 import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.UnknownTypeHandler;

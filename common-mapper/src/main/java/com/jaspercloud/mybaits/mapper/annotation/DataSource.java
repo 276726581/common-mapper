@@ -1,4 +1,4 @@
-package com.tiho.mybaits.mapper.annotation;
+package com.jaspercloud.mybaits.mapper.annotation;
 
 import org.springframework.stereotype.Component;
 

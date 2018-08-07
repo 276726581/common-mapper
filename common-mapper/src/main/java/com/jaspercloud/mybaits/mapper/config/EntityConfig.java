@@ -1,6 +1,6 @@
-package com.tiho.mybaits.mapper.config;
+package com.jaspercloud.mybaits.mapper.config;
 
-import com.tiho.mybaits.mapper.support.subtable.SubTableProcessor;
+import com.jaspercloud.mybaits.mapper.support.subtable.SubTableProcessor;
 import org.apache.ibatis.type.TypeHandler;
 
 import java.lang.reflect.Field;

@@ -1,7 +1,7 @@
-package com.tiho.mybaits.mapper.config;
+package com.jaspercloud.mybaits.mapper.config;
 
-import com.tiho.mybaits.mapper.annotation.FieldTypeDiscriminator;
-import com.tiho.mybaits.mapper.definition.CommonMapper;
+import com.jaspercloud.mybaits.mapper.annotation.FieldTypeDiscriminator;
+import com.jaspercloud.mybaits.mapper.definition.CommonMapper;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.binding.MapperMethod;
