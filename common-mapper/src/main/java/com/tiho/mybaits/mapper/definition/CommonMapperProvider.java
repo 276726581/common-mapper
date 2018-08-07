@@ -127,22 +127,22 @@ public class CommonMapperProvider {
     }
 
     public String selectListByPageAsc(Class<?> clazz, @Param(CommonMapper.PARAM) long lastId, int count) {
-        String sql = selectListByPage(clazz, lastId, count, "asc");
+        String sql = selectListByPage(clazz, lastId, count, ">", "asc");
         return sql;
     }
 
     public String selectListByPageDesc(Class<?> clazz, @Param(CommonMapper.PARAM) long lastId, int count) {
-        String sql = selectListByPage(clazz, lastId, count, "desc");
+        String sql = selectListByPage(clazz, lastId, count, "<", "desc");
         return sql;
     }
 
-    public String selectListByPage(Class<?> clazz, long lastId, int count, String order) {
+    public String selectListByPage(Class<?> clazz, long lastId, int count, String symbol, String order) {
         CommonMapperContext commonMapperContext = CommonMapperContext.get();
         EntityConfig entityConfig = commonMapperContext.getEntityConfig();
 
         StringBuilder builder = new StringBuilder();
         builder.append("select * from ").append(entityConfig.getTableName());
-        builder.append(" where ").append(entityConfig.getId()).append(">").append(CommonSQL.VAR(CommonMapper.PARAM));
+        builder.append(" where ").append(entityConfig.getId()).append(" ").append(symbol).append(" ").append(CommonSQL.VAR(CommonMapper.PARAM));
         builder.append(" order by ").append(entityConfig.getId()).append(" ").append(order);
         builder.append(" limit ").append(count);
         String pageSql = builder.toString();
