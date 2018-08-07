@@ -1,12 +1,19 @@
 package com.example.demo.entity;
 
-import com.tiho.mybaits.mapper.annotation.DataSource;
+import com.example.demo.support.ImageListTypeHandler;
+import com.example.demo.support.MapTypeHandler;
+import com.jaspercloud.mybaits.mapper.annotation.DataSource;
+import com.jaspercloud.mybaits.mapper.annotation.FieldTypeDiscriminator;
 import org.springframework.cache.annotation.Cacheable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Cacheable 是否缓存
@@ -43,6 +50,13 @@ public class User {
 
     @Column(name = "user_mark")
     private String userMark;
+
+    @FieldTypeDiscriminator(javaType = String.class, typeHandler = ImageListTypeHandler.class)
+    @Column(name = "images")
+    private List<String> imagesList = new ArrayList<>();
+
+    @FieldTypeDiscriminator(javaType = String.class, typeHandler = MapTypeHandler.class)
+    private Map<String, String> params = new HashMap<>();
 
     public Long getId() {
         return id;
@@ -82,6 +96,30 @@ public class User {
 
     public void setUserMark(String userMark) {
         this.userMark = userMark;
+    }
+
+    public List<String> getImagesList() {
+        return imagesList;
+    }
+
+    public void setImagesList(List<String> imagesList) {
+        this.imagesList = imagesList;
+    }
+
+    public Map<String, String> getParams() {
+        return params;
+    }
+
+    public void setParams(Map<String, String> params) {
+        this.params = params;
+    }
+
+    public void addImage(String image) {
+        imagesList.add(image);
+    }
+
+    public void addParam(String key, String value) {
+        params.put(key, value);
     }
 
     public User() {
