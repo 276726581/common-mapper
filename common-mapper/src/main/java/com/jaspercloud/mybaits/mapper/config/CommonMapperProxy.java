@@ -27,8 +27,8 @@ public class CommonMapperProxy implements InvocationHandler {
 
     private Logger logger = LoggerFactory.getLogger(CommonMapperProxy.class);
 
-    private static final Map<Class<?>, EntityConfig> entityConfigMap = new ConcurrentHashMap<>();
-    private static final Map<String, MapperMethod> methodCache = new ConcurrentHashMap<>();
+    private final Map<Class<?>, EntityConfig> entityConfigMap = new ConcurrentHashMap<>();
+    private final Map<String, MapperMethod> methodCache = new ConcurrentHashMap<>();
     private final Lock lock = new ReentrantLock();
     private final SqlSession sqlSession;
     private Class mapperInterface;
