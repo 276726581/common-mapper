@@ -20,13 +20,16 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CommonMapperProxy implements InvocationHandler {
 
     private Logger logger = LoggerFactory.getLogger(CommonMapperProxy.class);
 
-    private final Map<Class<?>, EntityConfig> entityConfigMap = new ConcurrentHashMap<>();
-    private final Map<String, MapperMethod> methodCache = new ConcurrentHashMap<>();
+    private static final Map<Class<?>, EntityConfig> entityConfigMap = new ConcurrentHashMap<>();
+    private static final Map<String, MapperMethod> methodCache = new ConcurrentHashMap<>();
+    private final Lock lock = new ReentrantLock();
     private final SqlSession sqlSession;
     private Class mapperInterface;
 
@@ -63,66 +66,82 @@ public class CommonMapperProxy implements InvocationHandler {
         }
     }
 
+    private EntityConfig loadEntityConfig(Class<?> clazz) {
+        Entity entity = clazz.getAnnotation(Entity.class);
+        if (null == entity) {
+            throw new NullPointerException("not found @Entity");
+        }
+
+        Cacheable cacheable = ReflectUtils.getAnnotation(clazz, Cacheable.class);
+        DataSource dataSource = ReflectUtils.getAnnotation(clazz, DataSource.class);
+        EntityConfig entityConfig = new EntityConfig();
+        entityConfig.setDataSourceName(null != dataSource ? dataSource.value() : "");
+        entityConfig.setCache(null != cacheable ? true : false);
+        entityConfig.setEntity(clazz);
+        entityConfig.setTableName(entity.name());
+        try {
+            SubTable subTable = clazz.getAnnotation(SubTable.class);
+            if (null != subTable) {
+                entityConfig.setSubAttribute(subTable.attribute());
+                SubTableProcessor subTableProcessor = subTable.value().newInstance();
+                entityConfig.setSubTableProcessor(subTableProcessor);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException(e.getMessage(), e);
+        }
+        Field[] fields = ReflectUtils.getAllDeclaredFields(clazz);
+        for (Field field : fields) {
+            Column column = field.getAnnotation(Column.class);
+            FieldTypeDiscriminator fieldTypeDiscriminator = field.getAnnotation(FieldTypeDiscriminator.class);
+            Id id = field.getAnnotation(Id.class);
+            GeneratedValue generatedValue = field.getAnnotation(GeneratedValue.class);
+            Transient transientAnnotation = field.getAnnotation(Transient.class);
+            String modifier = Modifier.toString(field.getModifiers());
+            if (null != transientAnnotation || modifier.contains("transient")) {
+                continue;
+            }
+            if (null != column && !StringUtils.isEmpty(column.name())) {
+                entityConfig.addColumnField(field, column.name());
+            } else {
+                entityConfig.addColumnField(field, field.getName());
+            }
+            if (null != id) {
+                if (null != column && !StringUtils.isEmpty(column.name())) {
+                    entityConfig.setId(column.name());
+                } else {
+                    entityConfig.setId(field.getName());
+                }
+            }
+            if (null != generatedValue) {
+                entityConfig.addSequenceField(field, generatedValue.generator());
+            }
+            if (null != fieldTypeDiscriminator) {
+                entityConfig.addFieldTypeHandler(field, fieldTypeDiscriminator.typeHandler());
+            }
+        }
+
+        Configuration configuration = sqlSession.getConfiguration();
+        CommonMapperAnnotationBuilder commonMapperAnnotationBuilder = new CommonMapperAnnotationBuilder(configuration, mapperInterface, entityConfig);
+        commonMapperAnnotationBuilder.parse();
+
+        return entityConfig;
+    }
+
     private EntityConfig cacheEntityConfig(Class<?> clazz) {
         EntityConfig entityConfig = entityConfigMap.get(clazz);
         if (null == entityConfig) {
-            Entity entity = clazz.getAnnotation(Entity.class);
-            if (null == entity) {
-                throw new NullPointerException("not found @Entity");
-            }
-
-            Cacheable cacheable = ReflectUtils.getAnnotation(clazz, Cacheable.class);
-            DataSource dataSource = ReflectUtils.getAnnotation(clazz, DataSource.class);
-            entityConfig = new EntityConfig();
-            entityConfig.setDataSourceName(null != dataSource ? dataSource.value() : "");
-            entityConfig.setCache(null != cacheable ? true : false);
-            entityConfig.setEntity(clazz);
-            entityConfig.setTableName(entity.name());
             try {
-                SubTable subTable = clazz.getAnnotation(SubTable.class);
-                if (null != subTable) {
-                    entityConfig.setSubAttribute(subTable.attribute());
-                    SubTableProcessor subTableProcessor = subTable.value().newInstance();
-                    entityConfig.setSubTableProcessor(subTableProcessor);
+                lock.lock();
+                entityConfig = entityConfigMap.get(clazz);
+                if (null != entityConfig) {
+                    return entityConfig;
                 }
-            } catch (Exception e) {
-                throw new IllegalArgumentException(e.getMessage(), e);
-            }
-            Field[] fields = ReflectUtils.getAllDeclaredFields(clazz);
-            for (Field field : fields) {
-                Column column = field.getAnnotation(Column.class);
-                FieldTypeDiscriminator fieldTypeDiscriminator = field.getAnnotation(FieldTypeDiscriminator.class);
-                Id id = field.getAnnotation(Id.class);
-                GeneratedValue generatedValue = field.getAnnotation(GeneratedValue.class);
-                Transient transientAnnotation = field.getAnnotation(Transient.class);
-                String modifier = Modifier.toString(field.getModifiers());
-                if (null != transientAnnotation || modifier.contains("transient")) {
-                    continue;
-                }
-                if (null != column && !StringUtils.isEmpty(column.name())) {
-                    entityConfig.addColumnField(field, column.name());
-                } else {
-                    entityConfig.addColumnField(field, field.getName());
-                }
-                if (null != id) {
-                    if (null != column && !StringUtils.isEmpty(column.name())) {
-                        entityConfig.setId(column.name());
-                    } else {
-                        entityConfig.setId(field.getName());
-                    }
-                }
-                if (null != generatedValue) {
-                    entityConfig.addSequenceField(field, generatedValue.generator());
-                }
-                if (null != fieldTypeDiscriminator) {
-                    entityConfig.addFieldTypeHandler(field, fieldTypeDiscriminator.typeHandler());
-                }
-            }
-            entityConfigMap.put(clazz, entityConfig);
 
-            Configuration configuration = sqlSession.getConfiguration();
-            CommonMapperAnnotationBuilder commonMapperAnnotationBuilder = new CommonMapperAnnotationBuilder(configuration, mapperInterface, entityConfig);
-            commonMapperAnnotationBuilder.parse();
+                entityConfig = loadEntityConfig(clazz);
+                entityConfigMap.put(clazz, entityConfig);
+            } finally {
+                lock.unlock();
+            }
         }
         return entityConfig;
     }
