@@ -5,7 +5,7 @@
 
     <groupId>io.github.open-creation</groupId>
     <artifactId>mybatis-common-mapper</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
 
     <name>mybatis-common-mapper</name>
