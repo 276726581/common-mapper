@@ -50,13 +50,13 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git:https://github.com/open-creation/common-mapper.git</connection>
-        <developerConnection>scm:git:https://github.com/open-creation/common-mapper.git</developerConnection>
-        <url>https://github.com/open-creation/common-mapper</url>
+        <connection>scm:git:https://github.com/jaspercloud/common-mapper.git</connection>
+        <developerConnection>scm:git:https://github.com/jaspercloud/common-mapper.git</developerConnection>
+        <url>https://github.com/jaspercloud/common-mapper</url>
     </scm>
     <developers>
         <developer>
-            <name>jason</name>
+            <name>jasper</name>
             <email>276726581@qq.com</email>
             <roles>
                 <role>developer</role>
